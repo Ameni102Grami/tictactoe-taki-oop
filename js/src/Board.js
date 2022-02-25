@@ -9,45 +9,45 @@
 class Board {
   constructor() {
     this._board = Board.makeEmptyBoard();
+    
   }
+  isEmpty(value) {
+    if (this.value == " ") {
+      return true;
+    } else {
+      return false;
+    }
+  }
+ 
   static makeEmptyBoard = () => [
-    ['', '', ''],
-    ['', '', ''],
-    ['', '', ''],
-  ]
-    // new Array(3).fill(new Array(3).fill(''));
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""],
+  ];
+  // new Array(3).fill(new Array(3).fill(''));
 
-   // isFull = () => this._board.every(r => r.every(Boolean));
-  isFull = () => !this._board.some(r => r.some(c => c === ''));
-  findShapeWithStraightLine = () => {
-    if (this._board[0][0] && (
-      (this._board[0][0] === this._board[0][1] && this._board[0][1] === this._board[0][2]) ||
-      (this._board[0][0] === this._board[1][0] && this._board[1][0] === this._board[2][0]) ||
-      (this._board[0][0] === this._board[1][1] && this._board[1][1] === this._board[2][2])
-    )) return this._board[0][0];
+  // isFull = () => this._board.every(r => r.every(Boolean));
+  isFull = () => !this._board.some((r) => r.some((c) => c === ""));
+  hasAStraignLine = (shape) => this.setCell;
+  setCell = ([x, y], newValue) => (this._board[x][y] = newValue);
 
-    if(this._board[1][1] && (
-        (this._board[0][1] === this._board[1][1] && this._board[1][1] === this._board[2][1]) ||
-        (this._board[1][0] === this._board[1][1] && this._board[1][1] === this._board[1][2])
-    )) return  this._board[1][1];
-    if (this._board[2][2] && (
-        (this._board[0][2] === this._board[1][2] && this._board[1][2] === this._board[2][2]) ||
-        (this._board[2][0] === this._board[2][1] && this._board[2][1] === this._board[2][2])
-    )) return this._board[2][2];
-
-    return null;
+  resetBoard = () => {
+    for (var i = 0; i < board.length; i++)
+      for (var j = 0; j < board.length; j++) 
+      this._board[i][j]="";
   };
-
-  setCell = ([x, y], newValue) => this._board[x][y] = newValue;
-  isCellFull = ([x, y]) => this._board[x][y] !== '';
-  isCellValid = cell => cell.every(v => /^[0-2]$/.test(v)) && !this.isCellFull(cell);
-  draw = () => { 
-    console.log('\n');
-    this._board.forEach(r => console.log(r.map(c => c || '-').join(' ')));
-    console.log('');
-  }
+  isCellFull = ([x, y]) => this._board[x][y] !== "";
+  draw = () =>
+    this._board.forEach((r) => console.log(r.map((c) => c || "-").join(" ")));
   // draw = () => console.table(this._board);
-
 }
+
+const board = new Board();
+board.setCell([0, 2], "X");
+board.setCell([2, 2], "O");
+console.log(board.isFull());
+console.log(board.isCellFull([2, 2]));
+console.log(board.isCellFull([2, 0]));
+board.draw();
 
 module.exports = Board;

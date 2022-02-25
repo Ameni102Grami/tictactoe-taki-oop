@@ -4,41 +4,16 @@ const Player = require('./Player');
 const Board = require('./Board');
 
 class Game {
-  static GAME_STATUES = {
-    PLAYER_1_WINNER: 1,
-    PLAYER_2_WINNER: 2,
-    TIE: 0,
-    IS_NOT_OVER: -1,
-  };
-
-  static ASK_FOR_NAME_PROPS = [
-    {
-      name: 'name',
-      // validator: /^[a-zA-z\s]{2,}$/,
-      warning: 'Name must be only letters or spaces, and at least two characters long',
-      conform: Player.isName,
-    },
-    {
-      name: 'shape',
-      conform: Player.isShape,
-      warning: 'Shape must be either "X" or "O"',
-    },
-  ];
-
-  static ASK_FOR_CELL_PROPS = [
-    { name: 'cell', description: 'Enter cell in format "x,y"', warning: 'Invalid choice' },
-  ]
-  
   constructor() {
     this._board = new Board();
-    this._players = [];
-    this._playerToPlayNextIdx = 0;
-    this._turns = 0;
-    this.gameStatus = Game.GAME_STATUES.IS_NOT_OVER;
+    
   }
 
-  async askForNameAndShape() {
-    return prompt.get(Game.ASK_FOR_NAME_PROPS);
+  askForNameAndShape() {
+    return new Promise(resolve => {
+      prompt.start()
+      prompt.get(['name', 'shape'], (err, result) => resolve(result))
+    })
   }
 
   async createPlayer(message) {
@@ -47,76 +22,87 @@ class Game {
     do {
       try {
         const { name, shape } = await this.askForNameAndShape();
-        player = new Player(name, shape);
+        const player = new Player(name, shape);
       } catch(err) {
         console.log(err.message)
       }
     } while (!player)
     return player;
   }
-
-  async createPlayers() {
-    this._players[0] = await this.createPlayer('Player1');
-    this._players[1] = await this.createPlayer('Player2');
-  }
-
-  async askPlayerForCell(player) {
-    const result = await prompt.get(Game.ASK_FOR_CELL_PROPS.map(prop => ({ 
-      ...prop,
-      conform: input => this._board.isCellValid(input.split(',').map(v => parseInt(v))),
-    })));
-
-    return result.cell.split(',').map(v => parseInt(v));
-  }
-
-  async iterateGame() {
-    while (this.gameStatus === Game.GAME_STATUES.IS_NOT_OVER) {
-      const player = this._players[this._playerToPlayNextIdx];
-      console.log(`\n**Turn ${this._turns + 1}`)
-      console.log(`*Player ${player.name}`)
-      const cell = await this.askPlayerForCell(player);
-      this._board.setCell(cell, player.shape);
-      this._board.draw();
-      this._playerToPlayNextIdx = (this._playerToPlayNextIdx === 0) ? 1 : 0;
-      this.updateGameStatus()
-    }
-  }
-
-  updateGameStatus() {
-    const shapeWithStraightLine = this._board.findShapeWithStraightLine();
-
-    if (shapeWithStraightLine) {
-      const playerIdx = this._players.findIndex(({ shape }) => shape === shapeWithStraightLine);
-      return this.gameStatus = Game.GAME_STATUES[`PLAYER_${playerIdx + 1}_WINNER`];
+  
+  askPlayerForCell(player,row,col) {
+    while(true) {
+				
+      console.log("Enter a row number (0, 1, or 2): ");
+      row = row;
+      console.log("Enter a column number (0, 1, or 2): ");
+      col = col;
+      if(row < 0 || col < 0 || row > 2 || col > 2) {
+        alert("This position is off the bounds of the board! Try again.");
+      } else if(_board[row][col] != '') {
+        console.log("Someone has already made a move at this position! Try again.");
+      } else {
+        break;
+      }
+    
     }
 
-    if (this._board.isFull()) return this.gameStatus = Game.GAME_STATUES.TIE;
-    return this.gameStatus = Game.GAME_STATUES.IS_NOT_OVER;
   }
-
-  printResults() {
-    switch (this.gameStatus) {
-      case Game.GAME_STATUES.PLAYER_1_WINNER: 
-        return console.log(`${this._players[0].name} is Winner !`);
-      case Game.GAME_STATUES.PLAYER_2_WINNER: 
-        return console.log(`${this._players[1].name} is Winner !`);
-      case Game.GAME_STATUES.TIE: 
-        return console.log(`No Winner! Game is a tie`);
-      default:
-        return console.log('Something went wrong');
+    playerHasWon(){
+      for(var i = 0; i < 3; i++) {
+        if(_board[i][0] == _board[i][1] && _board[i][1] == _board[i][2] && _board[i][0] != '-') {
+          return _board[i][0];
+        }
+      }
+      for(var j = 0; j < 3; j++) {
+        if(_board[0][j] == _board[1][j] && _board[1][j] == _board[2][j] && _board[0][j] != '-') {
+          return _board[0][j];
+        }
+      }
+      if(_board[0][0] == _board[1][1] && _board[1][1] == _board[2][2] && _board[0][0] != '-') {
+        return _board[0][0];
+      }
+      if(_board[2][0] == _board[1][1] && _board[1][1] ==  _board[0][2] && _board[2][0] != '-') {
+        return _board[2][0];
+      }
+  
+      return ' ';
     }
-  }
+  isOver() {
+    if(playerHasWon(_board) == 'x') {
+      console.log(_player1+ " has won!");
+      return 1;
+    } else if(playerHasWon(_board) == 'o') {
+      console.log(_player2 + " has won!");
+      return 2;
+    } else {
+      if(isFull(_board)) {
+        console.log("It's a tie!");
+        return 0;
+      } 
 
+    }
+
+  }
+    // returns 1 if player 1 is winner,
+    // returns 2 if player 0 is winner,
+    // return 0 if a tie
+    // checks if Board is full or if Board has a straight line with a specific shape
+  
 
   async start() {
-    await this.createPlayers();
-    await this.iterateGame();
-    this.printResults();
+    this._player1 = await this.createPlayer('Player1');
+    this._player2 = await this.createPlayer('Player2');
+    // ask player1 for name and shape
+    // ask player2 for name and shape
+
     // promopt player1 and 2 alternatively for choices
     // check winner every time
     
     // endGame
+    
   }
 }
 
-module.exports = Game;
+const game = new Game();
+game.start()
